@@ -1,0 +1,9 @@
+target/
+.git/
+.github/
+*.db
+*.db-journal
+.env
+.idea/
+.vscode/
+*.md
