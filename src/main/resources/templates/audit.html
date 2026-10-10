@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Audit Trail - Plot Lifecycle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/ventriloc.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="container mb-5" style="max-width: 1216px;">
+    <div class="d-flex justify-content-between align-items-end mb-4 pt-2">
+        <div>
+            <span class="ventriloc-eyebrow">Enterprise Telemetry</span>
+            <h1 class="serif-display mb-1" style="font-size: 44px; font-weight: 400;">Immutable Audit Trail</h1>
+            <p class="ventriloc-subtext mb-0">Cryptographically verifiable sequence of state changes, financial events, and user operations.</p>
+        </div>
+        <div style="width: 280px;">
+            <input type="text" id="auditSearch" class="form-control form-control-sm" placeholder="Search audit telemetry...">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table mb-0" id="auditTable">
+                <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th style="width: 170px;">Timestamp</th>
+                    <th style="width: 180px;">Action Type</th>
+                    <th style="width: 100px;">Entity</th>
+                    <th style="width: 80px;">Entity ID</th>
+                    <th style="width: 140px;">Operator</th>
+                    <th>Telemetry Details</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="log : ${logs}">
+                    <td class="ventriloc-subtext font-monospace" th:text="${log.id}"></td>
+                    <td class="small font-monospace ventriloc-subtext"
+                        th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                    <td>
+                        <span th:if="${#strings.contains(log.action, 'TRANSITION')}" class="badge badge-booked" th:text="${log.action}"></span>
+                        <span th:if="${#strings.contains(log.action, 'PAYMENT')}" class="badge badge-available" th:text="${log.action}"></span>
+                        <span th:if="${#strings.contains(log.action, 'LEAD')}" class="badge badge-loan" th:text="${log.action}"></span>
+                        <span th:if="${#strings.contains(log.action, 'COMMISSION')}" class="badge badge-sold" th:text="${log.action}"></span>
+                        <span th:if="${#strings.contains(log.action, 'SCHEDULE')}" class="badge badge-onhold" th:text="${log.action}"></span>
+                        <span th:if="${#strings.contains(log.action, 'DELETED')}" class="badge badge-cancelled" th:text="${log.action}"></span>
+                        <span th:if="${!#strings.contains(log.action, 'TRANSITION') && !#strings.contains(log.action, 'PAYMENT') && !#strings.contains(log.action, 'LEAD') && !#strings.contains(log.action, 'COMMISSION') && !#strings.contains(log.action, 'SCHEDULE') && !#strings.contains(log.action, 'DELETED')}"
+                              class="badge bg-secondary" th:text="${log.action}"></span>
+                    </td>
+                    <td class="fw-semibold text-dark" th:text="${log.entityType}"></td>
+                    <td class="ventriloc-subtext font-monospace" th:text="${log.entityId != null ? '#' + log.entityId : '-'}"></td>
+                    <td>
+                        <span class="badge bg-secondary" th:text="${log.performedBy}">SYSTEM</span>
+                    </td>
+                    <td class="small ventriloc-subtext" th:text="${log.details}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(logs)}">
+                    <td colspan="7" class="text-center ventriloc-subtext py-4">No audit telemetry recorded.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('auditSearch').addEventListener('keyup', function() {
+        const term = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#auditTable tbody tr');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

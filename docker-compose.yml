@@ -1,0 +1,17 @@
+# Run the whole app with: docker compose up --build
+# Copy .env.example to .env first and set the three SEED_*_PASSWORD values.
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /data/realestate.db
+    volumes:
+      - plotdata:/data
+    restart: unless-stopped
+
+volumes:
+  plotdata:

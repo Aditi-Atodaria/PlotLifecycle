@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Convert Lead - Plot Lifecycle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/ventriloc.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="container mb-5" style="max-width: 600px;">
+    <div class="card p-4" style="border-radius: var(--radius-card-featured) !important;">
+        <div class="mb-4">
+            <span class="ventriloc-eyebrow">Pipeline Conversion</span>
+            <h2 class="serif-heading mb-1" style="font-size: 30px; font-weight: 400;">Assign Acquisition</h2>
+            <p class="ventriloc-subtext small mb-0">Bind plot holding and financing structure for: <b class="text-dark" th:text="${lead.name}"></b></p>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger py-2 small mb-3" th:text="${error}"></div>
+
+        <form th:action="@{'/leads/' + ${lead.id} + '/convert'}" th:object="${convertForm}" method="post">
+            <div class="mb-3">
+                <label class="form-label small">Allocate Available Parcel *</label>
+                <select class="form-select" th:field="*{siteId}">
+                    <option value="">-- Choose an available parcel --</option>
+                    <option th:each="s : ${availableSites}" th:value="${s.id}"
+                            th:text="${'Plot #' + s.id + ' (Block ' + s.block + ', ' + s.areaSqft + ' sqft, ' + s.facing + ') - ₹' + #numbers.formatDecimal(s.price, 0, 'COMMA', 0, 'POINT')}"></option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('siteId')}" th:errors="*{siteId}"></div>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small">Verification ID Type *</label>
+                    <input class="form-control" th:field="*{idProofType}" placeholder="e.g. Aadhaar, Passport">
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('idProofType')}" th:errors="*{idProofType}"></div>
+                </div>
+                <div class="col-6">
+                    <label class="form-label small">Document Identification *</label>
+                    <input class="form-control" th:field="*{idProofNumber}" placeholder="e.g. 1234-5678-9012">
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('idProofNumber')}" th:errors="*{idProofNumber}"></div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small">Financing &amp; Settlement Plan *</label>
+                <select class="form-select" th:field="*{paymentPlan}">
+                    <option value="FULL_PAYMENT">Full Settlement (Immediate lump-sum consideration)</option>
+                    <option value="INSTALLMENT">Installment (20% Initial Down + 6-month equal tranches)</option>
+                    <option value="LOAN">Mortgage / Bank Loan (Pending financial appraisal)</option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-ventriloc-primary flex-grow-1">Confirm &amp; Hold Parcel</button>
+                <a href="/leads" class="btn btn-ventriloc-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

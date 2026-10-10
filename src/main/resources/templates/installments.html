@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Installments - Plot Lifecycle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/ventriloc.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="container mb-5" style="max-width: 1216px;">
+    <div class="d-flex justify-content-between align-items-end mb-4 pt-2">
+        <div>
+            <span class="ventriloc-eyebrow">Structured Tranches</span>
+            <h1 class="serif-display mb-1" style="font-size: 44px; font-weight: 400;">Installment Vault</h1>
+            <p class="ventriloc-subtext mb-0">6-month structured payment tranches generated off 80% remaining balances.</p>
+        </div>
+        <form th:action="@{/installments/check-overdue}" method="post" class="m-0">
+            <button class="btn btn-ventriloc-ghost btn-sm" type="submit">
+                🔄 Audit &amp; Flag Overdue
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary KPI cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Default Risk Exposure</span>
+                <div class="serif-stat my-1" style="font-size: 38px; font-weight: 400;"
+                     th:classappend="${overdueCount > 0} ? 'text-danger' : 'text-success'"
+                     th:text="${overdueCount}">0</div>
+                <span class="ventriloc-subtext small" th:if="${overdueCount > 0}">Past-due tranches requiring collection</span>
+                <span class="ventriloc-subtext small text-success" th:if="${overdueCount == 0}">Zero defaulted tranches</span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Projected Receivables (Uncollected Pool)</span>
+                <div class="serif-stat my-1 gilded-text" style="font-size: 38px; font-weight: 400;"
+                     th:text="${'₹' + #numbers.formatDecimal(projectedRevenue, 0, 'COMMA', 2, 'POINT')}">₹0.00</div>
+                <span class="ventriloc-subtext small">Across all active 6-month monthly tranches</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installments Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Buyer</th>
+                    <th>Plot</th>
+                    <th>Tranche</th>
+                    <th>Maturity Date</th>
+                    <th>Scheduled Balance</th>
+                    <th>Remitted</th>
+                    <th>Settlement</th>
+                    <th class="text-end">Tranche State</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${schedules}">
+                    <td class="ventriloc-subtext font-monospace" th:text="${s.id}"></td>
+                    <td class="fw-semibold text-dark" th:text="${s.buyer != null ? s.buyer.name : '-'}"></td>
+                    <td>
+                        <span class="badge bg-secondary"
+                              th:text="${s.buyer != null && s.buyer.site != null ? '#' + s.buyer.site.id : '-'}"></span>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary"
+                              th:text="${'Month ' + s.installmentNumber + ' / 6'}"></span>
+                    </td>
+                    <td th:text="${s.dueDate}"></td>
+                    <td class="fw-semibold text-dark" th:text="${'₹' + #numbers.formatDecimal(s.amount, 0, 'COMMA', 2, 'POINT')}"></td>
+                    <td th:text="${s.paidAmount != null ? '₹' + #numbers.formatDecimal(s.paidAmount, 0, 'COMMA', 2, 'POINT') : '₹0.00'}"></td>
+                    <td class="ventriloc-subtext small" th:text="${s.paidDate != null ? s.paidDate : '-'}"></td>
+                    <td class="text-end">
+                        <span th:if="${s.status.name() == 'PAID'}" class="badge badge-available">PAID</span>
+                        <span th:if="${s.status.name() == 'PENDING'}" class="badge badge-onhold">PENDING</span>
+                        <span th:if="${s.status.name() == 'OVERDUE'}" class="badge badge-cancelled">OVERDUE</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(schedules)}">
+                    <td colspan="9" class="text-center ventriloc-subtext py-4">
+                        No installment schedules active. Convert an inquiry with the "Installment" plan to generate tranches.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

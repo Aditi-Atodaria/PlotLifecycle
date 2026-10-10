@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Commissions - Plot Lifecycle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/ventriloc.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="container mb-5" style="max-width: 1216px;">
+    <div class="d-flex justify-content-between align-items-end mb-4 pt-2">
+        <div>
+            <span class="ventriloc-eyebrow">Brokerage Incentives</span>
+            <h1 class="serif-display mb-1" style="font-size: 44px; font-weight: 400;">Commission Ledger</h1>
+            <p class="ventriloc-subtext mb-0">Automated 2% performance credit recognized on parcel settlement (SOLD).</p>
+        </div>
+        <div class="card py-2 px-3 text-end">
+            <span class="ventriloc-subtext small d-block">Total Recognized Payouts</span>
+            <span class="serif-stat" style="font-size: 28px; font-weight: 400; color: var(--color-ember-orange);"
+                  th:text="${'₹' + #numbers.formatDecimal(totalCommissionsPaid, 0, 'COMMA', 2, 'POINT')}">₹0.00</span>
+        </div>
+    </div>
+
+    <!-- Agent Leaderboard -->
+    <div class="card mb-4">
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+            <span class="ventriloc-eyebrow mb-0">Sales Leadership Standings</span>
+            <span class="ventriloc-subtext small">Cumulative Attribution</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 80px;">Rank</th>
+                    <th>Sales Representative</th>
+                    <th>Deals Closed</th>
+                    <th>Total Sales Volume</th>
+                    <th class="text-end">Commissions Earned</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry, stat : ${leaderboard}">
+                    <td>
+                        <span th:if="${stat.index == 0}" class="badge badge-sold">1ST</span>
+                        <span th:if="${stat.index == 1}" class="badge bg-secondary">2ND</span>
+                        <span th:if="${stat.index == 2}" class="badge bg-secondary">3RD</span>
+                        <span th:if="${stat.index > 2}" class="badge bg-secondary" th:text="${stat.count}"></span>
+                    </td>
+                    <td class="fw-semibold text-dark" th:text="${entry.agentName}">Agent</td>
+                    <td>
+                        <span class="badge bg-secondary" th:text="${entry.dealsClosed + ' closed'}">0</span>
+                    </td>
+                    <td th:text="${'₹' + #numbers.formatDecimal(entry.totalSalesVolume, 0, 'COMMA', 2, 'POINT')}">₹0.00</td>
+                    <td class="text-end fw-semibold text-dark"
+                        th:text="${'₹' + #numbers.formatDecimal(entry.totalCommission, 0, 'COMMA', 2, 'POINT')}">₹0.00</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(leaderboard)}">
+                    <td colspan="5" class="text-center ventriloc-subtext py-4">
+                        No closed sales registered yet. When a plot transitions to SOLD, 2% commission appears automatically.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Commission Transactions -->
+    <div class="card">
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+            <span class="ventriloc-eyebrow mb-0">Attribution Log</span>
+            <span class="ventriloc-subtext small">Audit Trail</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th>Credited Agent</th>
+                    <th>Plot ID</th>
+                    <th>Gross Consideration</th>
+                    <th>Rate</th>
+                    <th class="text-end">Remittance</th>
+                    <th class="text-end">Maturity Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${commissions}">
+                    <td class="ventriloc-subtext font-monospace" th:text="${c.id}"></td>
+                    <td class="fw-semibold text-dark" th:text="${c.agentName}"></td>
+                    <td>
+                        <span class="badge bg-secondary"
+                              th:text="${c.site != null ? '#' + c.site.id : '-'}"></span>
+                    </td>
+                    <td th:text="${'₹' + #numbers.formatDecimal(c.saleAmount, 0, 'COMMA', 2, 'POINT')}"></td>
+                    <td><span class="badge bg-secondary">2.0%</span></td>
+                    <td class="text-end fw-semibold" style="color: var(--color-ember-orange);"
+                        th:text="${'₹' + #numbers.formatDecimal(c.commissionAmount, 0, 'COMMA', 2, 'POINT')}"></td>
+                    <td class="text-end ventriloc-subtext small" th:text="${c.createdAt}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(commissions)}">
+                    <td colspan="7" class="text-center ventriloc-subtext py-4">No individual commission credits in ledger.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

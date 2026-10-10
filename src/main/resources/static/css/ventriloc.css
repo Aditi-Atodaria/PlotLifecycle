@@ -1,0 +1,440 @@
+/* Ventriloc — Style Reference
+   Editorial data observatory on warm paper — a single orange ember punctuating monochrome precision.
+   Theme: light
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500&display=swap');
+
+:root {
+  /* Ventriloc Color Tokens */
+  --color-canvas-white: #ffffff;
+  --color-ash: #efefef;
+  --color-fog: #f5f5f5;
+  --color-ivory: #ebe6dd;
+  --color-graphite: #202020;
+  --color-steel: #4d4d4d;
+  --color-slate: #828282;
+  --color-mist: #e8e8e8;
+  --color-ember-orange: #ff682c;
+  --color-brass: #816729;
+
+  /* Aliases for compatibility */
+  --color-paper-white: #ffffff;
+  --color-copper: #ff682c;
+  --color-bone: #202020;
+  --color-silver: #4d4d4d;
+  --color-obsidian: #ffffff;
+  --color-onyx: #ffffff;
+  --color-carbon: #f5f5f5;
+
+  /* Typography */
+  --font-space-grotesk: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Surfaces & Radii */
+  --radius-buttons: 0px;
+  --radius-nav-pill: 200px;
+  --radius-card-featured: 6px 0px 0px 0px;
+  --radius-card-data: 20px;
+  --radius-tags: 20px;
+}
+
+/* Global Reset */
+html, body {
+  background-color: var(--color-canvas-white) !important;
+  color: var(--color-graphite) !important;
+  font-family: var(--font-inter) !important;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography Hierarchy - Space Grotesk at weight 400 (never bold) */
+.serif-display, .display-heading {
+  font-family: var(--font-space-grotesk) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--color-graphite) !important;
+  line-height: 1.15;
+}
+
+.serif-heading, .section-heading {
+  font-family: var(--font-space-grotesk) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--color-graphite) !important;
+}
+
+.serif-stat, .stat-value {
+  font-family: var(--font-space-grotesk) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--color-graphite) !important;
+}
+
+.slash-eyebrow, .ventriloc-eyebrow {
+  font-family: var(--font-inter);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-slate);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.slash-subtext, .ventriloc-subtext {
+  font-family: var(--font-inter);
+  color: var(--color-steel);
+  font-size: 14px;
+}
+
+.gilded-text {
+  color: var(--color-graphite) !important;
+  font-weight: 500;
+  border-bottom: 1.5px solid var(--color-ember-orange);
+  display: inline-block;
+  padding-bottom: 1px;
+}
+
+.ember-accent {
+  color: var(--color-ember-orange) !important;
+}
+
+.brass-accent {
+  color: var(--color-brass) !important;
+}
+
+/* Navigation - Floating Pill Container */
+.slash-nav, .ventriloc-nav {
+  background: transparent !important;
+  border: none !important;
+  padding: 20px 0 10px 0 !important;
+}
+
+.nav-pill-container {
+  background-color: var(--color-ash);
+  border: 1px solid var(--color-mist);
+  border-radius: var(--radius-nav-pill);
+  padding: 8px 24px;
+  box-shadow: none !important;
+}
+
+.slash-brand, .ventriloc-brand {
+  font-family: var(--font-space-grotesk);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--color-graphite) !important;
+  text-decoration: none;
+}
+
+.slash-brand span, .ventriloc-brand span {
+  color: var(--color-ember-orange);
+  font-weight: 400;
+  margin: 0 2px;
+}
+
+.slash-nav .nav-link, .ventriloc-nav .nav-link {
+  font-family: var(--font-inter);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--color-steel) !important;
+  padding: 6px 14px !important;
+  border-radius: var(--radius-nav-pill);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.slash-nav .nav-link:hover,
+.slash-nav .nav-link.active,
+.ventriloc-nav .nav-link:hover,
+.ventriloc-nav .nav-link.active {
+  color: var(--color-graphite) !important;
+  font-weight: 500;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Cards & Surfaces - Zero Drop Shadows */
+.card, .slash-card, .ventriloc-card {
+  background-color: var(--color-canvas-white) !important;
+  border: 1px solid var(--color-mist) !important;
+  border-radius: var(--radius-card-data) !important;
+  box-shadow: none !important;
+  color: var(--color-graphite) !important;
+}
+
+/* Asymmetric Featured Card (6px 0px 0px 0px) */
+.slash-panel, .ventriloc-featured-card, .card-asymmetric {
+  background-color: var(--color-ash) !important;
+  border: 1px solid var(--color-mist) !important;
+  border-radius: var(--radius-card-featured) !important;
+  box-shadow: none !important;
+  color: var(--color-graphite) !important;
+}
+
+.card-ivory {
+  background-color: var(--color-ivory) !important;
+  border: 1px solid var(--color-mist) !important;
+  border-radius: var(--radius-card-featured) !important;
+}
+
+.card-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--color-mist) !important;
+  color: var(--color-graphite) !important;
+}
+
+.card-body {
+  padding: 24px;
+}
+
+/* Strict Buttons: 0px Sharp Rectangular Corners */
+.btn-slash-primary, .btn-primary, .btn-ventriloc-primary {
+  background-color: var(--color-graphite) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-graphite) !important;
+  border-radius: 0px !important;
+  font-family: var(--font-inter) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  padding: 8px 18px !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-slash-primary:hover, .btn-primary:hover, .btn-ventriloc-primary:hover {
+  background-color: #383838 !important;
+  border-color: #383838 !important;
+  color: #ffffff !important;
+  transform: none !important;
+}
+
+.btn-slash-ghost, .btn-outline-light, .btn-outline-dark, .btn-ventriloc-ghost {
+  background-color: transparent !important;
+  color: var(--color-graphite) !important;
+  border: 1px solid var(--color-graphite) !important;
+  border-radius: 0px !important;
+  font-family: var(--font-inter) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  padding: 8px 18px !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.btn-slash-ghost:hover, .btn-outline-light:hover, .btn-outline-dark:hover, .btn-ventriloc-ghost:hover {
+  background-color: var(--color-ash) !important;
+  color: var(--color-graphite) !important;
+  border-color: var(--color-graphite) !important;
+}
+
+.btn-slash-copper, .btn-outline-primary, .btn-ventriloc-outline {
+  background-color: transparent !important;
+  color: var(--color-graphite) !important;
+  border: 1px solid var(--color-mist) !important;
+  border-radius: 0px !important;
+  font-family: var(--font-inter) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 6px 14px !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.btn-slash-copper:hover, .btn-outline-primary:hover, .btn-ventriloc-outline:hover {
+  background-color: #ffffff !important;
+  color: var(--color-ember-orange) !important;
+  border-color: var(--color-ember-orange) !important;
+}
+
+.btn-slash-danger, .btn-outline-danger {
+  background-color: transparent !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 0px !important;
+  font-family: var(--font-inter) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 6px 14px !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.btn-slash-danger:hover, .btn-outline-danger:hover {
+  background-color: #fef2f2 !important;
+  border-color: #b91c1c !important;
+  color: #b91c1c !important;
+}
+
+/* Forms & Inputs: Sharp Editorial Precision */
+.form-control, .form-select {
+  background-color: var(--color-fog) !important;
+  border: 1px solid var(--color-mist) !important;
+  color: var(--color-graphite) !important;
+  border-radius: 0px !important;
+  font-family: var(--font-inter) !important;
+  font-size: 14px !important;
+  padding: 8px 14px !important;
+  box-shadow: none !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--color-ember-orange) !important;
+  background-color: #ffffff !important;
+  color: var(--color-graphite) !important;
+  box-shadow: 0 0 0 1px var(--color-ember-orange) !important;
+}
+
+.form-control::placeholder {
+  color: var(--color-slate) !important;
+}
+
+.form-label {
+  color: var(--color-steel) !important;
+  font-size: 12.5px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* Tables: Editorial Data Registry */
+.table {
+  color: var(--color-graphite) !important;
+  border-color: var(--color-mist) !important;
+  background-color: transparent !important;
+}
+
+.table > :not(caption) > * > * {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--color-mist) !important;
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.table thead th {
+  color: var(--color-slate) !important;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-mist) !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--color-fog) !important;
+}
+
+/* Status Badges: 20px Pill Radius with Delicately Tinted Surfaces */
+.badge {
+  border-radius: var(--radius-tags) !important;
+  font-family: var(--font-inter) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 4px 10px !important;
+  letter-spacing: 0.02em;
+}
+
+.badge-available, .badge-active, .badge.bg-success {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.badge-onhold, .badge.bg-warning {
+  background-color: #fff7ed !important;
+  color: #c2410c !important;
+  border: 1px solid #fed7aa !important;
+}
+
+.badge-loan, .badge.bg-info {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+}
+
+.badge-booked, .badge.bg-primary {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.badge-sold, .badge.bg-dark {
+  background-color: #fefce8 !important;
+  color: #816729 !important;
+  border: 1px solid #fde047 !important;
+}
+
+.badge-cancelled, .badge-overdue, .badge.bg-danger {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--color-fog) !important;
+  color: var(--color-steel) !important;
+  border: 1px solid var(--color-mist) !important;
+}
+
+/* Modals */
+.modal-content {
+  background-color: var(--color-canvas-white) !important;
+  border: 1px solid var(--color-mist) !important;
+  border-radius: var(--radius-card-featured) !important;
+  color: var(--color-graphite) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--color-mist) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--color-mist) !important;
+}
+
+.btn-close {
+  filter: none;
+}
+
+/* Alerts */
+.alert {
+  border-radius: 0px !important;
+  font-size: 13.5px;
+}
+
+.alert-danger {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #b91c1c !important;
+}
+
+.alert-success {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+.alert-info {
+  background-color: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  color: #0369a1 !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-fog);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-mist);
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate);
+}

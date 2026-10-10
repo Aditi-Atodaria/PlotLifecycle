@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ledger - Plot Lifecycle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/ventriloc.css">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="container mb-5" style="max-width: 1216px;">
+    <div class="d-flex justify-content-between align-items-end mb-4 pt-2">
+        <div>
+            <span class="ventriloc-eyebrow">Capital Settlements</span>
+            <h1 class="serif-display mb-1" style="font-size: 44px; font-weight: 400;">Financial Ledger</h1>
+            <p class="ventriloc-subtext mb-0">Record collections to reconcile installment tranches and advance lifecycle state.</p>
+        </div>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger py-2 small mb-4" th:text="${error}"></div>
+
+    <!-- Record Payment Card -->
+    <div class="card p-4 mb-4">
+        <span class="ventriloc-eyebrow" style="font-size: 11px;">Record Transaction Inbound</span>
+        <form th:action="@{/payments}" th:object="${paymentForm}" method="post" class="row g-2 mt-2">
+            <div class="col-md-4">
+                <label class="form-label small">Buyer &amp; Parcel *</label>
+                <select class="form-select" th:field="*{buyerId}">
+                    <option value="">-- Select buyer --</option>
+                    <option th:each="b : ${buyers}" th:value="${b.id}"
+                            th:text="${b.name + ' (Site #' + (b.site != null ? b.site.id : '-') + ' - ' + (b.site != null && b.site.project != null ? b.site.project.name : '') + ')'}"></option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('buyerId')}" th:errors="*{buyerId}"></div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Amount Paid (₹) *</label>
+                <input class="form-control" th:field="*{amount}" placeholder="e.g. 200000">
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Tranche Category *</label>
+                <select class="form-select" th:field="*{paymentType}">
+                    <option value="DOWN_PAYMENT">Down Payment</option>
+                    <option value="INSTALLMENT">Monthly Installment</option>
+                    <option value="LOAN_DISBURSEMENT">Loan Disbursement</option>
+                    <option value="REFUND">Refund / Cancellation</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-ventriloc-primary w-100" type="submit">Commit Ledger</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 60px;">ID</th>
+                    <th>Buyer</th>
+                    <th>Plot</th>
+                    <th>Tranche Category</th>
+                    <th class="text-end">Remittance</th>
+                    <th class="text-end">Settlement Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${payments}">
+                    <td class="ventriloc-subtext font-monospace" th:text="${'#' + p.id}"></td>
+                    <td class="fw-semibold text-dark" th:text="${p.buyer != null ? p.buyer.name : '-'}"></td>
+                    <td>
+                        <span class="badge bg-secondary"
+                              th:text="${p.buyer != null && p.buyer.site != null ? '#' + p.buyer.site.id : '-'}"></span>
+                    </td>
+                    <td>
+                        <span th:if="${p.paymentType.name() == 'DOWN_PAYMENT'}" class="badge badge-booked">DOWN PAYMENT</span>
+                        <span th:if="${p.paymentType.name() == 'INSTALLMENT'}" class="badge badge-loan">INSTALLMENT</span>
+                        <span th:if="${p.paymentType.name() == 'LOAN_DISBURSEMENT'}" class="badge badge-available">LOAN DISBURSEMENT</span>
+                        <span th:if="${p.paymentType.name() == 'REFUND'}" class="badge badge-cancelled">REFUND</span>
+                    </td>
+                    <td class="text-end fw-semibold text-dark"
+                        th:text="${'₹' + #numbers.formatDecimal(p.amount, 0, 'COMMA', 2, 'POINT')}"></td>
+                    <td class="text-end ventriloc-subtext small" th:text="${p.paymentDate}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(payments)}">
+                    <td colspan="6" class="text-center ventriloc-subtext py-4">No remittance transactions in ledger.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

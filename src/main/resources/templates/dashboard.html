@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - Plot Lifecycle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/ventriloc.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="container mb-5" style="max-width: 1216px;">
+    <!-- Editorial page header + project filter -->
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 pt-2 gap-3">
+        <div>
+            <span class="ventriloc-eyebrow">Portfolio Intelligence</span>
+            <h1 class="serif-display mb-1" style="font-size: 52px; font-weight: 400; letter-spacing: -0.02em;">Executive Observatory</h1>
+            <p class="ventriloc-subtext mb-0">Inventory, collections, pipeline and installment risk. Updated <span id="updatedAt">-</span>, refreshes every 30 seconds.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <select id="projectFilter" class="form-select form-select-sm" style="width:auto;" aria-label="Project">
+                <option value="">All projects</option>
+                <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.name}">Project</option>
+            </select>
+            <button id="refreshBtn" class="btn btn-ventriloc-outline btn-sm" type="button">Refresh</button>
+        </div>
+    </div>
+
+    <div id="errorBox" class="alert alert-danger d-none"></div>
+
+    <!-- KPI cards -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Total Units</span>
+                <div class="serif-stat my-1 " id="kTotalSites" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small"><span id="kAvailable">-</span> open to market</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Sell-Through</span>
+                <div class="serif-stat my-1 " id="kSellThrough" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small"><span id="kSoldBooked">-</span> booked or sold</span><div class="progress mt-2" style="height:4px;border-radius:0;background:var(--color-mist);"><div id="kSellBar" class="progress-bar" style="width:0%;background:var(--color-ember-orange);"></div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Sales Value</span>
+                <div class="serif-stat my-1 " id="kSalesValue" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small">Booked + sold plots</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Unsold Inventory</span>
+                <div class="serif-stat my-1 " id="kUnsold" style="font-size: 36px; font-weight: 400; color: var(--color-steel);">-</div>
+                <span class="ventriloc-subtext small">Available plots at list price</span>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Realized Collections</span>
+                <div class="serif-stat my-1 gilded-text" id="kCollected" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small">Net of refunds: <span id="kNet">-</span></span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Outstanding Balance</span>
+                <div class="serif-stat my-1 " id="kOutstanding" style="font-size: 36px; font-weight: 400; color: var(--color-ember-orange);">-</div>
+                <span class="ventriloc-subtext small"><span id="kCollectionPct">-</span>% of sales value collected</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Refunds Returned</span>
+                <div class="serif-stat my-1 " id="kRefunded" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small">Money given back to buyers</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Lead Conversion</span>
+                <div class="serif-stat my-1 " id="kConversion" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small"><span id="kConverted">-</span> of <span id="kLeads">-</span> leads converted</span>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Overdue Tranches</span>
+                <div class="serif-stat my-1 " id="kOverdue" style="font-size: 36px; font-weight: 400;">-</div>
+                <span class="ventriloc-subtext small"><span id="kOverdueNote">-</span></span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card p-3 h-100">
+                <span class="ventriloc-eyebrow" style="font-size: 11px;">Projected Receivables</span>
+                <div class="serif-stat my-1 " id="kProjected" style="font-size: 36px; font-weight: 400; color: var(--color-steel);">-</div>
+                <span class="ventriloc-subtext small">Unpaid installment tranches</span>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="ventriloc-eyebrow" style="font-size: 11px;">AI Executive Summary</span>
+                        <span class="ventriloc-subtext small" id="aiEngine">Portfolio health, cash flow and collection risk in one briefing.</span>
+                    </div>
+                    <button id="aiBtn" class="btn btn-ventriloc-primary btn-sm" type="button">&#10024; Generate</button>
+                </div>
+                <div id="aiBody" class="small mt-3 d-none" style="white-space: pre-line; line-height: 1.55;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3 mb-3">
+        <div class="col-lg-5">
+            <div class="card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="ventriloc-eyebrow mb-0">Inventory Matrix</span><span class="ventriloc-subtext small">By Lifecycle State</span>
+                </div>
+                <div style="position:relative;height:250px;"><canvas id="statusChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="ventriloc-eyebrow mb-0">Capital Trajectory</span><div class="btn-group btn-group-sm" id="rangeButtons"><button type="button" class="btn btn-ventriloc-outline active" data-days="7">7D</button><button type="button" class="btn btn-ventriloc-outline" data-days="30">30D</button><button type="button" class="btn btn-ventriloc-outline" data-days="90">90D</button></div>
+                </div>
+                <div style="position:relative;height:250px;"><canvas id="revenueChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="ventriloc-eyebrow mb-0">Lead Pipeline</span><span class="ventriloc-subtext small">By Stage</span>
+                </div>
+                <div style="position:relative;height:250px;"><canvas id="funnelChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="ventriloc-eyebrow mb-0">Capital Sources</span><span class="ventriloc-subtext small">By Payment Type</span>
+                </div>
+                <div style="position:relative;height:250px;"><canvas id="typeChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receivables + ledger -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+                    <span class="ventriloc-eyebrow mb-0">Receivables Watch</span>
+                    <span class="ventriloc-subtext small">Largest balances</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead><tr><th>Buyer</th><th>Plot</th><th class="text-end">Paid</th><th class="text-end">Owes</th></tr></thead>
+                        <tbody id="outstandingBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+                    <span class="ventriloc-eyebrow mb-0">Latest Ledger Entries</span>
+                    <a href="/payments" sec:authorize="hasAnyRole('ADMIN','ACCOUNTANT')" class="small text-decoration-none" style="color: var(--color-ember-orange);">Open ledger &#10132;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead><tr><th>Date</th><th>Buyer</th><th>Type</th><th class="text-end">Amount</th></tr></thead>
+                        <tbody id="recentBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard + status lexicon -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+                    <span class="ventriloc-eyebrow mb-0">Performance Standings</span>
+                    <span class="ventriloc-subtext small">2% Automated Commission</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead><tr><th>Agent</th><th>Deals Closed</th><th>Sales Volume</th><th class="text-end">Commission</th></tr></thead>
+                        <tbody id="leaderboardBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-4 h-100">
+                <span class="ventriloc-eyebrow">Status Lexicon</span>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom" style="border-color: var(--color-mist) !important;">
+                        <span class="badge badge-available">AVAILABLE</span>
+                        <span class="ventriloc-subtext small">Open to market</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom" style="border-color: var(--color-mist) !important;">
+                        <span class="badge badge-onhold">ON_HOLD</span>
+                        <span class="ventriloc-subtext small">Inquiry converted</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom" style="border-color: var(--color-mist) !important;">
+                        <span class="badge badge-loan">LOAN_PENDING</span>
+                        <span class="ventriloc-subtext small">Bank evaluation</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom" style="border-color: var(--color-mist) !important;">
+                        <span class="badge badge-booked">BOOKED</span>
+                        <span class="ventriloc-subtext small">Down payment received</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom" style="border-color: var(--color-mist) !important;">
+                        <span class="badge badge-sold">SOLD</span>
+                        <span class="ventriloc-subtext small">Settled &amp; credited</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between py-1">
+                        <span class="badge badge-cancelled">CANCELLED</span>
+                        <span class="ventriloc-subtext small">Restocked to pool</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project comparison -->
+    <div class="card mb-4">
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+            <span class="ventriloc-eyebrow mb-0">Project Comparison</span>
+            <span class="ventriloc-subtext small">Sell-through and collections per scheme</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                <tr>
+                    <th>Project</th><th class="text-end">Units</th><th class="text-end">Available</th>
+                    <th class="text-end">Booked / Sold</th><th style="width:170px;">Sell-through</th>
+                    <th class="text-end">Sales Value</th><th class="text-end">Collected</th>
+                </tr>
+                </thead>
+                <tbody id="projectBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Plot matrix -->
+    <div class="card p-4 mb-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+                <span class="ventriloc-eyebrow mb-0">Physical Grid</span>
+                <h5 class="serif-heading mb-0" style="font-size: 24px; font-weight: 400;">Plot Inventory Matrix</h5>
+            </div>
+            <a href="/sites" class="btn btn-ventriloc-outline btn-sm">Full Inventory &#10132;</a>
+        </div>
+        <div class="d-flex flex-wrap gap-2 pt-2" id="siteMap"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Ventriloc palette. Each status has a chart colour, a tile tint and a badge class (from ventriloc.css).
+    const STATUS = {
+        AVAILABLE:    { color: '#059669', bg: '#f0fdf4', border: '#bbf7d0', badge: 'badge-available', short: 'AVAILABLE' },
+        ON_HOLD:      { color: '#ff682c', bg: '#fff7ed', border: '#fed7aa', badge: 'badge-onhold',    short: 'ON_HOLD' },
+        LOAN_PENDING: { color: '#0284c7', bg: '#f0f9ff', border: '#bae6fd', badge: 'badge-loan',      short: 'LOAN' },
+        BOOKED:       { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', badge: 'badge-booked',    short: 'BOOKED' },
+        SOLD:         { color: '#816729', bg: '#fefce8', border: '#fde047', badge: 'badge-sold',      short: 'SOLD' },
+        CANCELLED:    { color: '#dc2626', bg: '#fef2f2', border: '#fecaca', badge: 'badge-cancelled', short: 'CANCEL' }
+    };
+    const PRETTY = s => s.replace(/_/g, ' ').toLowerCase().replace(/^\w/, c => c.toUpperCase());
+    const rupee = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    // Compact form for the cards: 1.20 Cr, 45.0 L
+    const rupeeShort = n => {
+        n = Number(n || 0);
+        if (n >= 10000000) return '₹' + (n / 10000000).toFixed(2) + ' Cr';
+        if (n >= 100000) return '₹' + (n / 100000).toFixed(1) + ' L';
+        return rupee(n);
+    };
+    const setText = (id, value) => { document.getElementById(id).textContent = value; };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+        c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const AXIS = { grid: { color: '#efefef' }, ticks: { color: '#828282', font: { family: 'Inter' } } };
+    let days = 7;
+    const charts = {};
+
+    // Create the chart once, then only swap its data on later refreshes.
+    function drawChart(key, canvasId, config) {
+        if (charts[key]) {
+            charts[key].data = config.data;
+            charts[key].update();
+        } else {
+            config.options = Object.assign({ responsive: true, maintainAspectRatio: false }, config.options || {});
+            charts[key] = new Chart(document.getElementById(canvasId), config);
+        }
+    }
+
+    function currentProject() { return document.getElementById('projectFilter').value; }
+
+    function render(d) {
+        const k = d.kpis;
+        setText('kTotalSites', k.totalSites);
+        setText('kAvailable', k.availableSites);
+        setText('kSellThrough', k.sellThroughPercent + '%');
+        setText('kSoldBooked', k.soldOrBookedSites);
+        document.getElementById('kSellBar').style.width = k.sellThroughPercent + '%';
+        setText('kSalesValue', rupeeShort(k.salesValue));
+        setText('kUnsold', rupeeShort(k.unsoldInventoryValue));
+        setText('kCollected', rupeeShort(k.collected));
+        setText('kNet', rupeeShort(k.netCollected));
+        setText('kOutstanding', rupeeShort(k.outstanding));
+        setText('kCollectionPct', k.collectionPercent);
+        setText('kRefunded', rupeeShort(k.refunded));
+        setText('kConversion', k.leadConversionPercent + '%');
+        setText('kConverted', k.convertedLeads);
+        setText('kLeads', k.totalLeads);
+        setText('kOverdue', k.overdueInstallments);
+        setText('kOverdueNote', k.overdueInstallments > 0 ? 'Follow-up required' : 'Zero default risk');
+        const overdueEl = document.getElementById('kOverdue');
+        overdueEl.classList.toggle('text-danger', k.overdueInstallments > 0);
+        overdueEl.classList.toggle('text-success', k.overdueInstallments === 0);
+        setText('kProjected', rupeeShort(k.projectedReceivables));
+        setText('updatedAt', d.generatedAt.replace('T', ' '));
+
+        const labels = Object.keys(d.statusSummary);
+        drawChart('status', 'statusChart', {
+            type: 'doughnut',
+            data: { labels: labels.map(PRETTY),
+                    datasets: [{ data: Object.values(d.statusSummary),
+                                 backgroundColor: labels.map(l => STATUS[l].color),
+                                 borderWidth: 2, borderColor: '#ffffff' }] },
+            options: { plugins: { legend: { position: 'bottom',
+                       labels: { color: '#4d4d4d', font: { family: 'Inter', size: 12 } } } } }
+        });
+
+        drawChart('revenue', 'revenueChart', {
+            type: 'line',
+            data: { labels: Object.keys(d.revenueTrend),
+                    datasets: [{ label: 'Realized Collections', data: Object.values(d.revenueTrend),
+                                 borderColor: '#ff682c', backgroundColor: 'rgba(255, 104, 44, 0.08)',
+                                 fill: true, tension: 0.35, borderWidth: 2.5,
+                                 pointBackgroundColor: '#ff682c', pointBorderColor: '#ffffff',
+                                 pointBorderWidth: 2, pointRadius: days > 30 ? 0 : 4 }] },
+            options: { plugins: { legend: { display: false },
+                                  tooltip: { callbacks: { label: c => rupee(c.parsed.y) } } },
+                       scales: { x: Object.assign({}, AXIS, { ticks: Object.assign({}, AXIS.ticks, { maxTicksLimit: 8 }) }),
+                                 y: Object.assign({ beginAtZero: true }, AXIS) } }
+        });
+
+        drawChart('funnel', 'funnelChart', {
+            type: 'bar',
+            data: { labels: Object.keys(d.leadFunnel).map(PRETTY),
+                    datasets: [{ label: 'Leads', data: Object.values(d.leadFunnel), backgroundColor: '#202020' }] },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } },
+                       scales: { x: Object.assign({ beginAtZero: true }, AXIS, { ticks: Object.assign({}, AXIS.ticks, { precision: 0 }) }),
+                                 y: { grid: { display: false }, ticks: AXIS.ticks } } }
+        });
+
+        drawChart('type', 'typeChart', {
+            type: 'bar',
+            data: { labels: Object.keys(d.revenueByType).map(PRETTY),
+                    datasets: [{ label: 'Amount', data: Object.values(d.revenueByType),
+                                 backgroundColor: ['#ff682c', '#816729', '#202020', '#dc2626'] }] },
+            options: { plugins: { legend: { display: false },
+                                  tooltip: { callbacks: { label: c => rupee(c.parsed.y) } } },
+                       scales: { y: Object.assign({ beginAtZero: true }, AXIS),
+                                 x: { grid: { display: false }, ticks: AXIS.ticks } } }
+        });
+
+        document.getElementById('outstandingBody').innerHTML = d.outstandingBuyers.map(r =>
+            `<tr><td class="fw-semibold text-dark">${esc(r.buyer)}</td>
+                 <td class="ventriloc-subtext small">${esc(r.site)}</td>
+                 <td class="text-end">${rupee(r.paid)}</td>
+                 <td class="text-end fw-bold" style="color: var(--color-ember-orange);">${rupee(r.outstanding)}</td></tr>`).join('') ||
+            '<tr><td colspan="4" class="text-center ventriloc-subtext py-4">Nobody owes anything right now.</td></tr>';
+
+        document.getElementById('recentBody').innerHTML = d.recentPayments.map(r =>
+            `<tr><td>${esc(r.date)}</td><td class="fw-semibold text-dark">${esc(r.buyer)}</td>
+                 <td><span class="badge ${r.type === 'REFUND' ? 'badge-cancelled' : 'bg-secondary'}">${esc(PRETTY(r.type))}</span></td>
+                 <td class="text-end">${r.type === 'REFUND' ? '&minus;' : ''}${rupee(r.amount)}</td></tr>`).join('') ||
+            '<tr><td colspan="4" class="text-center ventriloc-subtext py-4">No payments recorded yet.</td></tr>';
+
+        document.getElementById('leaderboardBody').innerHTML = d.leaderboard.map(a =>
+            `<tr><td class="fw-semibold text-dark">${esc(a.agentName)}</td>
+                 <td><span class="badge bg-secondary">${a.dealsClosed}</span></td>
+                 <td>${rupee(a.totalSalesVolume)}</td>
+                 <td class="text-end fw-bold" style="color: var(--color-ember-orange);">${rupee(a.totalCommission)}</td></tr>`).join('') ||
+            '<tr><td colspan="4" class="text-center ventriloc-subtext py-4">No commissions recorded yet.</td></tr>';
+
+        document.getElementById('projectBody').innerHTML = d.projects.map(p =>
+            `<tr><td class="fw-semibold text-dark">${esc(p.name)}<div class="ventriloc-subtext small fw-normal">${esc(p.location)}</div></td>
+                 <td class="text-end">${p.totalSites}</td><td class="text-end">${p.availableSites}</td>
+                 <td class="text-end">${p.soldOrBookedSites}</td>
+                 <td><div class="progress" style="height:4px;border-radius:0;background:var(--color-mist);">
+                        <div class="progress-bar" style="width:${p.sellThroughPercent}%;background:var(--color-ember-orange);"></div></div>
+                     <div class="ventriloc-subtext small">${p.sellThroughPercent}%</div></td>
+                 <td class="text-end">${rupeeShort(p.salesValue)}</td>
+                 <td class="text-end fw-bold">${rupeeShort(p.collected)}</td></tr>`).join('');
+
+        document.getElementById('siteMap').innerHTML = d.siteMap.map(s => {
+            const st = STATUS[s.status] || STATUS.CANCELLED;
+            return `<div class="p-2 text-center" title="${esc(s.project)} · ${rupee(s.price)}"
+                         style="width:96px; background:${st.bg}; border:1px solid ${st.border}; border-radius:4px;">
+                        <div class="small fw-semibold text-dark">Block ${esc(s.block)}</div>
+                        <div class="small text-muted">#${s.id}</div>
+                        <div class="badge ${st.badge} mt-1" style="font-size:9px;">${st.short}</div>
+                    </div>`;
+        }).join('') || '<span class="ventriloc-subtext">No sites in this project yet.</span>';
+    }
+
+    async function load() {
+        const query = new URLSearchParams({ days: days });
+        if (currentProject()) query.set('projectId', currentProject());
+        const box = document.getElementById('errorBox');
+        try {
+            const response = await fetch('/api/dashboard/summary?' + query.toString());
+            if (!response.ok) throw new Error('Server returned ' + response.status);
+            render(await response.json());
+            box.classList.add('d-none');
+        } catch (err) {
+            box.textContent = 'Could not load dashboard data: ' + err.message;
+            box.classList.remove('d-none');
+        }
+    }
+
+    // AI executive briefing (calls /api/dashboard/ai-summary)
+    async function generateBriefing() {
+        const btn = document.getElementById('aiBtn');
+        const body = document.getElementById('aiBody');
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+        body.classList.remove('d-none');
+        body.textContent = 'Analysing portfolio...';
+        try {
+            const url = '/api/dashboard/ai-summary' + (currentProject() ? '?projectId=' + currentProject() : '');
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Server returned ' + response.status);
+            const data = await response.json();
+            body.textContent = data.briefing;
+            setText('aiEngine', 'Powered by ' + data.engine);
+        } catch (err) {
+            body.textContent = 'Could not generate the briefing: ' + err.message;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '&#10024; Regenerate';
+        }
+    }
+
+    document.getElementById('projectFilter').addEventListener('change', load);
+    document.getElementById('refreshBtn').addEventListener('click', load);
+    document.getElementById('aiBtn').addEventListener('click', generateBriefing);
+    document.getElementById('rangeButtons').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-days]');
+        if (!btn) return;
+        days = Number(btn.dataset.days);
+        document.querySelectorAll('#rangeButtons button').forEach(b => b.classList.toggle('active', b === btn));
+        load();
+    });
+
+    load();
+    setInterval(load, 30000);
+</script>
+</body>
+</html>
